@@ -13,11 +13,27 @@ fn main() {
 
         let mut index: u32 = 0;
         let mut total: i32 = 0;
+        let mut mul_disabled = false;
 
         let left_mut = ['m', 'u', 'l', '('];
+        let do_command = ['d', 'o', '(', ')'];
+        let dont_command = ['d', 'o', 'n', '\'', 't', '(', ')'];
         let del_left = ',';
         let del_right = ')';
         while index as usize != input.len() {
+            if mul_disabled {
+                if lookahead(&mut index, &input, &do_command) {
+                    mul_disabled = false;
+                } else {
+                    index += 1;
+                    continue;
+                }
+            }
+            if lookahead(&mut index, &input, &dont_command) {
+                mul_disabled = true;
+                continue;
+            }
+
             if !find_next_index(&mut index, &input, &left_mut) {
                 continue;
             }
@@ -37,6 +53,22 @@ fn main() {
         }
         println!("{total} Done");
     }
+}
+
+fn lookahead(cursor: &mut u32, text: &Vec<char>, chars_to_find: &[char]) -> bool {
+    let max_length = chars_to_find.len();
+    for value in 0..max_length {
+        let cur_index = *cursor as usize + value;
+        if cur_index > text.len() {
+            return false
+        }
+        let cur = text[cur_index];
+        if chars_to_find[value] != cur {
+            return false;
+        }
+    }
+    *cursor += max_length as u32;
+    return true;
 }
 
 fn get_next_digit(cursor: &mut u32, text: &Vec<char>, max_length: u8, delimiter: char) -> i32 {
